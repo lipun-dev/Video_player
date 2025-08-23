@@ -1,5 +1,6 @@
 package com.example.videoplayer.presentation.ui
 
+import androidx.annotation.OptIn
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -12,15 +13,18 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.media3.common.util.Log
+import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import com.example.videoplayer.presentation.Utils.videoCard
 import com.example.videoplayer.viewModel.MyViewModel
 
 
+@OptIn(UnstableApi::class)
 @Composable
 fun AllVideoScreen(navController: NavController,
                    modifier: Modifier = Modifier,
-                   viewModel: MyViewModel = hiltViewModel()
+                   viewModel: MyViewModel = hiltViewModel<MyViewModel>()
 ) {
 
     Column (
@@ -31,6 +35,8 @@ fun AllVideoScreen(navController: NavController,
         }
 
         val videoList = viewModel.videoList.collectAsState()
+        //9cf214fe-592e-469b-8cd6-56ff3df49a6e  9cf214fe-592e-469b-8cd6-56ff3df49a6e
+        Log.d("AllVideoScreen", "Step1: Using ViewModel instance ID = ${viewModel.getInstanceId()}")
 
         LazyColumn(
             modifier = Modifier.fillMaxSize(),

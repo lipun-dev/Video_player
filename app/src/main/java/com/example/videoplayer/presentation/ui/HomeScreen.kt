@@ -33,11 +33,12 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.videoplayer.presentation.navigation.TabItem
+import com.example.videoplayer.viewModel.MyViewModel
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(navController: NavController) {
+fun HomeScreen(navController: NavController,viewModel: MyViewModel) {
 
     val tabs = listOf(
         TabItem("Folder", icon = Icons.Default.Folder, filedIcon = Icons.Outlined.Folder),
@@ -101,8 +102,8 @@ fun HomeScreen(navController: NavController) {
                 state = pagerState, modifier = Modifier.weight(1f)
             ) {page->
                 when(page){
-                    0->FolderScreen(navController = navController)
-                    1->AllVideoScreen(navController)
+                    0->FolderScreen(navController = navController, viewModel = viewModel)
+                    1->AllVideoScreen(navController, viewModel = viewModel)
                 }
 
             }

@@ -1,5 +1,6 @@
 package com.example.videoplayer.presentation.ui
 
+import androidx.annotation.OptIn
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -12,15 +13,18 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.media3.common.util.Log
+import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import com.example.videoplayer.presentation.Utils.CustomTopAppBar
 import com.example.videoplayer.presentation.Utils.videoCard
 import com.example.videoplayer.viewModel.MyViewModel
 
 
+@OptIn(UnstableApi::class)
 @Composable
 fun FolderVideoScreen(navController: NavController,folderName: String,
-                      viewModel: MyViewModel = hiltViewModel()
+                      viewModel: MyViewModel
 ) {
     Scaffold (
         topBar ={ CustomTopAppBar(
@@ -29,9 +33,14 @@ fun FolderVideoScreen(navController: NavController,folderName: String,
 
         )}
     ){innerpadding->
+// 40acd3e0-e971-4529-bfc6-8e6bf8a6e968
+        Log.d("FolderVideoScreen", "Step1: Using ViewModel instance ID = ${viewModel.getInstanceId()}")
 
         val videoFolder = viewModel.FolderList.collectAsState().value
+//        Log.d("FolderVideoScreen", "Step1: FolderList map size = ${videoFolder.size}, Keys = ${videoFolder.keys.joinToString()}")  // Log map details
+//        Log.d("FolderVideoScreen", "Step1: Incoming folderName = '$folderName'")
         val videosInFolder = videoFolder[folderName]?:emptyList()
+//        Log.d("FolderVideoScreen", "Step1: Videos in folder size = ${videosInFolder.size}")
 
         LazyColumn(
             modifier = Modifier.fillMaxSize()

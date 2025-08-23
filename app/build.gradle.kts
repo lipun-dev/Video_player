@@ -82,4 +82,7 @@ dependencies {
     //extended material 3 icons with added folders
     implementation("androidx.compose.material:material-icons-extended")
 
+    //permission
+    implementation("com.google.accompanist:accompanist-permissions:0.37.3")
+
 }

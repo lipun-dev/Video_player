@@ -16,7 +16,7 @@ import com.example.videoplayer.viewModel.MyViewModel
 @Composable
 fun FolderScreen(
     navController: NavController,
-    viewModel: MyViewModel = hiltViewModel()
+    viewModel: MyViewModel
 
 ) {
     val videoFolder = viewModel.FolderList.collectAsState().value
