@@ -7,11 +7,14 @@ import androidx.lifecycle.viewModelScope
 import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
 import com.example.videoplayer.data.videoModel
+import com.example.videoplayer.dataStore.prefDataStore
 import com.example.videoplayer.repo.Repo
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.util.UUID
 import javax.inject.Inject
@@ -19,15 +22,18 @@ import javax.inject.Inject
 
 @HiltViewModel
 class MyViewModel @OptIn(UnstableApi::class)
-@Inject constructor(val repo: Repo,val application: Application): ViewModel() {
+@Inject constructor(val repo: Repo,val application: Application,private val prefs: prefDataStore): ViewModel() {
 
     private val instanceId = UUID.randomUUID().toString()
-    init {
-        //9cf214fe-592e-469b-8cd6-56ff3df49a6e  9cf214fe-592e-469b-8cd6-56ff3df49a6e
-        Log.d("MyViewModel", "Step1: Created ViewModel instance ID = $instanceId")
-    }
+
     // Expose for debugging
     fun getInstanceId() = instanceId
+
+    val isPermissionGranted: StateFlow<Boolean?> =
+        prefs.isPermissionGranted()
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
+
+
 
 
 
@@ -44,6 +50,26 @@ class MyViewModel @OptIn(UnstableApi::class)
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
+    init {
+        observePermission()
+    }
+
+    private fun observePermission() {
+        // 🔹 Auto-load if permission already granted
+        viewModelScope.launch {
+            isPermissionGranted
+                .collect { granted ->
+                if (granted == true) {
+                    LoadAllvideos()
+                    LoadFolderVideos()
+                } else {
+                    _videoList.value = emptyList()
+                    _FolderList.value = emptyMap()
+                }
+            }
+        }
+    }
+
     @OptIn(UnstableApi::class)
     fun LoadAllvideos(){
         viewModelScope.launch {
@@ -52,10 +78,10 @@ class MyViewModel @OptIn(UnstableApi::class)
                 _videoList.value = it
 
             }
-
+            _isLoading.value = false
         }
 
-        _isLoading.value = false
+
 
 
     }
@@ -68,20 +94,17 @@ class MyViewModel @OptIn(UnstableApi::class)
                 Log.d("MyViewModel", "Step1: Emitted folders, size = ${it.size}, keys = ${it.keys.joinToString()}")
                 _FolderList.value = it
             }
+            _isLoading.value = false
         }
-        _isLoading.value = false
+
 
     }
 
     fun setPermissionGranted(granted: Boolean) {
-        _showUi.value = granted
-        if (granted) {
-            LoadAllvideos()
-            LoadFolderVideos()
-        } else {
-            _videoList.value = emptyList()
-            _FolderList.value = emptyMap()
-        }
+       viewModelScope.launch {
+           _showUi.value = granted
+           prefs.setPermissionGranted(granted)
+       }
     }
 
 

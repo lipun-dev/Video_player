@@ -2,17 +2,21 @@ package com.example.videoplayer.presentation.ui
 
 import androidx.annotation.OptIn
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
@@ -26,21 +30,21 @@ import com.example.videoplayer.viewModel.MyViewModel
 fun FolderVideoScreen(navController: NavController,folderName: String,
                       viewModel: MyViewModel
 ) {
+    val name = folderName.split("/").lastOrNull().toString()
     Scaffold (
         topBar ={ CustomTopAppBar(
-            topAppBarText = folderName,
+            topAppBarText = name,
             navController = navController
 
         )}
     ){innerpadding->
-// 40acd3e0-e971-4529-bfc6-8e6bf8a6e968
+
         Log.d("FolderVideoScreen", "Step1: Using ViewModel instance ID = ${viewModel.getInstanceId()}")
 
-        val videoFolder = viewModel.FolderList.collectAsState().value
-//        Log.d("FolderVideoScreen", "Step1: FolderList map size = ${videoFolder.size}, Keys = ${videoFolder.keys.joinToString()}")  // Log map details
-//        Log.d("FolderVideoScreen", "Step1: Incoming folderName = '$folderName'")
+        val videoFolder = viewModel.FolderList.collectAsStateWithLifecycle().value
+
         val videosInFolder = videoFolder[folderName]?:emptyList()
-//        Log.d("FolderVideoScreen", "Step1: Videos in folder size = ${videosInFolder.size}")
+
 
         LazyColumn(
             modifier = Modifier.fillMaxSize()
@@ -49,23 +53,42 @@ fun FolderVideoScreen(navController: NavController,folderName: String,
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
 
-            items(
-                videosInFolder
-            ) {video->
+            if(videosInFolder.isEmpty()){
+                item {
+                    Box(
+                        modifier = Modifier
+                            .fillParentMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "No videos found",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = Color.Gray
+                        )
+                    }
+                }
+            }else{
+                items(
+                    videosInFolder
+                ) {video->
 
-                videoCard(
-                    path = video.path?:"Unknown",
-                    title = video.title?:"Untitled",
-                    size = video.size?:"Unknown",
-                    duration = video.duration?:"Unknown",
-                    dateAdded = video.dateAdded?:"Unknown",
-                    fileName = video.filename?:"Unknown",
-                    thumbnail = video.thumbnailUri?:"Unknown",
-                    id = video.id?:"Unknown",
-                    navController = navController
-                )
+                    videoCard(
+                        path = video.path?:"Unknown",
+                        title = video.title?:"Untitled",
+                        size = video.size?:"Unknown",
+                        duration = video.duration?:"Unknown",
+                        dateAdded = video.dateAdded?:"Unknown",
+                        fileName = video.filename?:"Unknown",
+                        thumbnail = video.thumbnailUri?:"Unknown",
+                        id = video.id?:"Unknown",
+                        navController = navController
+                    )
+
+                }
 
             }
+
+
 
 
         }

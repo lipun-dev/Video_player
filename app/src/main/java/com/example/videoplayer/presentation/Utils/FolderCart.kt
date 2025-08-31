@@ -29,6 +29,8 @@ fun FolderCart(
     navController: NavController
 ) {
 
+    val name = folderName.split("/").lastOrNull().toString()
+
     Card(
         modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
             .clickable{
@@ -48,7 +50,7 @@ fun FolderCart(
             Spacer(modifier = Modifier.width(16.dp))
             Column {
                 Text(
-                    text = folderName,
+                    text = name,
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.onSurface
                 )

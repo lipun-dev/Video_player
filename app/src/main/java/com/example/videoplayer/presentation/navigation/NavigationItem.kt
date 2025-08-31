@@ -6,18 +6,18 @@ sealed class NavigationItem {
 
 
     @Serializable
-    object App
+    object App: NavigationItem()
 
     @Serializable
-    object HomeScreen
+    object HomeScreen: NavigationItem()
 
     @Serializable
-    data class Video_player(val VideoUri: String,val title: String? = null)
+    data class Video_player(val VideoUri: String,val title: String? = null): NavigationItem()
 
     @Serializable
-    data class folderVideoScreen(val folderName: String)
+    data class folderVideoScreen(val folderName: String): NavigationItem()
 
     @Serializable
-    data class AllVideoFolder(val folderName: String)
+    data class AllVideoFolder(val folderName: String): NavigationItem()
 
 }

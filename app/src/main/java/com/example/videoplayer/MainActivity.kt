@@ -6,7 +6,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.annotation.RequiresApi
-import com.example.videoplayer.presentation.navigation.AppNavigation
+import com.example.videoplayer.presentation.ui.MainScreen
 import com.example.videoplayer.ui.theme.VideoPlayerTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -18,7 +18,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             VideoPlayerTheme {
-                AppNavigation()
+                MainScreen()
 
             }
         }
