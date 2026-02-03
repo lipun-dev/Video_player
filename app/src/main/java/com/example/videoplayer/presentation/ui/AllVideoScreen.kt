@@ -1,6 +1,8 @@
 package com.example.videoplayer.presentation.ui
 
+import android.os.Build
 import androidx.annotation.OptIn
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,7 +19,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
@@ -25,11 +26,12 @@ import com.example.videoplayer.presentation.Utils.videoCard
 import com.example.videoplayer.viewModel.MyViewModel
 
 
+@RequiresApi(Build.VERSION_CODES.Q)
 @OptIn(UnstableApi::class)
 @Composable
 fun AllVideoScreen(navController: NavController,
                    modifier: Modifier = Modifier,
-                   viewModel: MyViewModel = hiltViewModel<MyViewModel>()
+                   viewModel: MyViewModel
 ) {
 
     Column (
@@ -74,7 +76,10 @@ fun AllVideoScreen(navController: NavController,
                         fileName = it.filename,
                         thumbnail = it.thumbnailUri.toString(),
                         id = it.id.toString(),
-                        navController = navController
+                        navController = navController,
+                        onFileChanged = {
+                            viewModel.LoadAllvideos()
+                        }
                     )
                 }
 

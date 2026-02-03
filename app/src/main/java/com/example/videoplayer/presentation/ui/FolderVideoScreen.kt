@@ -1,6 +1,10 @@
 package com.example.videoplayer.presentation.ui
 
+
+import android.os.Build
 import androidx.annotation.OptIn
+import androidx.annotation.RequiresApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -8,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -15,28 +20,34 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
+import com.example.videoplayer.R
 import com.example.videoplayer.presentation.Utils.CustomTopAppBar
 import com.example.videoplayer.presentation.Utils.videoCard
 import com.example.videoplayer.viewModel.MyViewModel
 
 
-@OptIn(UnstableApi::class)
+@RequiresApi(Build.VERSION_CODES.Q)
+@OptIn(UnstableApi::class, ExperimentalMaterial3Api::class
+)
 @Composable
 fun FolderVideoScreen(navController: NavController,folderName: String,
                       viewModel: MyViewModel
 ) {
     val name = folderName.split("/").lastOrNull().toString()
+
     Scaffold (
         topBar ={ CustomTopAppBar(
             topAppBarText = name,
-            navController = navController
-
-        )}
+            navController = navController,
+        )},
+        modifier = Modifier.background(color = colorResource(R.color.back_black)),
+        containerColor = colorResource(R.color.back_black)
     ){innerpadding->
 
         Log.d("FolderVideoScreen", "Step1: Using ViewModel instance ID = ${viewModel.getInstanceId()}")
@@ -75,13 +86,16 @@ fun FolderVideoScreen(navController: NavController,folderName: String,
                     videoCard(
                         path = video.path?:"Unknown",
                         title = video.title?:"Untitled",
-                        size = video.size?:"Unknown",
-                        duration = video.duration?:"Unknown",
-                        dateAdded = video.dateAdded?:"Unknown",
-                        fileName = video.filename?:"Unknown",
+                        size = video.size,
+                        duration = video.duration,
+                        dateAdded = video.dateAdded,
+                        fileName = video.filename,
                         thumbnail = video.thumbnailUri?:"Unknown",
                         id = video.id?:"Unknown",
-                        navController = navController
+                        navController = navController,
+                        onFileChanged = {
+                            viewModel.LoadFolderVideos()
+                        }
                     )
 
                 }

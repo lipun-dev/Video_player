@@ -5,8 +5,7 @@ import kotlinx.serialization.Serializable
 sealed class NavigationItem {
 
 
-    @Serializable
-    object App: NavigationItem()
+
 
     @Serializable
     object HomeScreen: NavigationItem()
