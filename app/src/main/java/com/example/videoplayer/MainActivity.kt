@@ -8,12 +8,12 @@ import android.provider.MediaStore
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.annotation.OptIn
 import androidx.annotation.RequiresApi
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
 import com.example.videoplayer.dataStore.prefDataStore
@@ -25,30 +25,31 @@ import com.example.videoplayer.viewModel.MyViewModel
 
 
 class MainActivity : ComponentActivity() {
-    private var pendingVideoUri by mutableStateOf<Uri?>(null)
-    private var pendingVideoTitle by mutableStateOf<String?>(null)
+
+    private val viewModel by viewModels<MyViewModel> {
+        object : ViewModelProvider.Factory{
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                val repo = RepoImpal()
+                val pref = prefDataStore(context = this@MainActivity)
+                @Suppress("UNCHECKED_CAST")
+                return MyViewModel(repo,  this@MainActivity.application,pref) as T
+            }
+        }
+    }
+
     @OptIn(UnstableApi::class)
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
         super.onCreate(savedInstanceState)
-
-        processIntent(intent)
-
-        val repo = RepoImpal()
-        val pref = prefDataStore(context = this)
-        val viewModel = MyViewModel(repo = repo, prefs = pref, application = this.application)
         enableEdgeToEdge()
+        processIntent(intent)
         setContent {
             VideoPlayerTheme {
                 AppNavigation(
                     startDestination = NavigationItem.HomeScreen,
-                    viewModel = viewModel,
-                    pendingVideoUri = pendingVideoUri,
-                    pendingVideoTitle = pendingVideoTitle
-                ){
-                    clearPendingVideo()
-                }
+                    viewModel = viewModel
+                )
 
             }
         }
@@ -64,9 +65,11 @@ class MainActivity : ComponentActivity() {
         if (intent?.action == Intent.ACTION_VIEW && intent.data != null) {
             val uri = intent.data
             if (uri != null) {
-                pendingVideoUri = uri
-                pendingVideoTitle = extractVideoTitle(uri)
+                val title = extractVideoTitle(uri)
                 Log.d("IntentHandler", "Received video URI: $uri")
+
+                // Pass data to ViewModel instead of holding it in Activity
+                viewModel.handleExternalIntent(uri, title)
             }
         }
     }
@@ -92,8 +95,4 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private fun clearPendingVideo() {
-        pendingVideoUri = null
-        pendingVideoTitle = null
-    }
 }

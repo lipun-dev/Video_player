@@ -33,6 +33,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -49,6 +50,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -98,6 +100,11 @@ fun videoCard(
             Toast.makeText(context,"Permission Granted , please try again.", Toast.LENGTH_SHORT).show()
         }
     }
+
+    val permanentTextColor = Color.White
+    val permanentSecondaryTextColor = Color(0xFFCCCCCC) // Light Gray
+    val permanentSheetColor = Color(0xFF1E1E1E) // Dark Gray for Sheet/Dialogs
+    val permanentErrorColor = Color(0xFFFF5252)
 
     Box(
         modifier = Modifier
@@ -165,7 +172,7 @@ fun videoCard(
                 Text(
                     text = fileName.takeIf { it.isNotBlank() }?:"Untitled",
                     style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurface,
+                    color = permanentTextColor,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     fontFamily = irishGroverFamily
@@ -177,21 +184,21 @@ fun videoCard(
                 Text(
                     text = "Duration : ${formatter(duration.toLongOrNull()?:0)}",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = permanentSecondaryTextColor,
                     fontFamily = irishGroverFamily
                 )
 
                 Text(
                     text = "Size : ${formatFIleSize(size.toLongOrNull()?:0)}",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = permanentSecondaryTextColor,
                     fontFamily = irishGroverFamily
                 )
 
                 Text(
                     text = "Added : ${formatDate(dateAdded.toLongOrNull()?:0)}",
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = permanentSecondaryTextColor,
                     fontFamily = irishGroverFamily
                 )
 
@@ -212,7 +219,8 @@ fun videoCard(
                 showBottomSheet.value = false
             },
             sheetState = sheetState,
-            containerColor = MaterialTheme.colorScheme.surface
+            containerColor = permanentSheetColor,
+            contentColor = permanentTextColor
         ) {
             Column (
                 modifier = Modifier
@@ -222,6 +230,7 @@ fun videoCard(
                 BottomSheetItem(
                     icon = Icons.Default.Share,
                     label = "Share",
+                    contentColor = permanentTextColor,
                     onClick = {
                         scope.launch { sheetState.hide() }.invokeOnCompletion {
                             if (!sheetState.isVisible) {
@@ -236,6 +245,7 @@ fun videoCard(
                 BottomSheetItem(
                     icon = Icons.Default.Edit,
                     label = "Rename",
+                    contentColor = permanentTextColor,
                     onClick = {
                         scope.launch { sheetState.hide() }.invokeOnCompletion {
                             if (!sheetState.isVisible) {
@@ -252,7 +262,7 @@ fun videoCard(
                 BottomSheetItem(
                     icon = Icons.Default.Delete,
                     label = "Delete",
-                    contentColor = MaterialTheme.colorScheme.error, // Red color for delete
+                    contentColor = permanentErrorColor, // Red color for delete
                     onClick = {
                         scope.launch { sheetState.hide() }.invokeOnCompletion {
                             if (!sheetState.isVisible) {
@@ -271,13 +281,22 @@ fun videoCard(
     if (showRenameDialog.value) {
         AlertDialog(
             onDismissRequest = { showRenameDialog.value = false },
+            containerColor = permanentSheetColor, // FIXED: Dark background
+            titleContentColor = permanentTextColor,
+            textContentColor = permanentSecondaryTextColor,
             title = { Text("Rename Video") },
             text = {
                 OutlinedTextField(
                     value = renameText.value,
                     onValueChange = { renameText.value = it },
-                    label = { Text("New Name") },
-                    singleLine = true
+                    label = { Text("New Name", color = permanentSecondaryTextColor) },
+                    singleLine = true,
+                    textStyle = TextStyle(color = permanentTextColor), // Input text color
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = permanentTextColor,
+                        unfocusedBorderColor = permanentSecondaryTextColor,
+                        cursorColor = permanentTextColor
+                    )
                 )
             },
             confirmButton = {
@@ -293,10 +312,10 @@ fun videoCard(
                         onFileChanged()
                         Toast.makeText(context, "Renamed successfully", Toast.LENGTH_SHORT).show()
                     }
-                }) { Text("Rename") }
+                }) { Text("Rename", color = permanentTextColor) }
             },
             dismissButton = {
-                TextButton(onClick = { showRenameDialog.value = false }) { Text("Cancel") }
+                TextButton(onClick = { showRenameDialog.value = false }) { Text("Cancel", color = permanentSecondaryTextColor) }
             }
         )
     }
@@ -305,6 +324,9 @@ fun videoCard(
     if (showDeleteDialog.value) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog.value = false },
+            containerColor = permanentSheetColor, // FIXED
+            titleContentColor = permanentTextColor,
+            textContentColor = permanentSecondaryTextColor,
             title = { Text("Delete Video") },
             text = { Text("Are you sure you want to delete '$title'? This action cannot be undone.") },
             confirmButton = {
@@ -326,10 +348,10 @@ fun videoCard(
                         }
                     },
                     colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
-                ) { Text("Delete") }
+                ) { Text("Delete", color = permanentErrorColor) }
             },
             dismissButton = {
-                TextButton(onClick = { showDeleteDialog.value = false }) { Text("Cancel") }
+                TextButton(onClick = { showDeleteDialog.value = false }) { Text("Cancel", color = permanentSecondaryTextColor) }
             }
         )
     }
@@ -340,7 +362,7 @@ fun videoCard(
 fun BottomSheetItem(
     icon: ImageVector,
     label: String,
-    contentColor: Color = MaterialTheme.colorScheme.onSurface,
+    contentColor: Color,
     onClick:()-> Unit
 ) {
     Row(

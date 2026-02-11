@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -106,6 +107,7 @@ fun FolderScreen(
 
     // Collect data
     val videoFolder = viewModel.FolderList.collectAsState().value
+    val isLoading = viewModel.isLoading.collectAsState().value
 
     // 5. Open Settings Function
     val openSettings = {
@@ -126,36 +128,61 @@ fun FolderScreen(
         // CONTENT LOGIC
         if (hasPermission) {
             // Permission Granted: Show List
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
-            ) {
-                if (videoFolder.isEmpty()) {
-                    item {
+
+                when{
+                    isLoading -> {
                         Box(
-                            modifier = Modifier.fillParentMaxSize(),
+                            modifier = Modifier.fillMaxSize(),
                             contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = "No Folders found",
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = Color.Gray
-                            )
+                        ){
+
+                            CircularProgressIndicator(color = Color.White)
                         }
                     }
-                } else {
-                    items(videoFolder.toList()) { (folderName, videos) ->
-                        FolderCart(
-                            folderName = folderName,
-                            videoCount = videos.size,
-                            onClick = {
-                                navController.navigate(NavigationItem.folderVideoScreen(folderName = folderName))
+                    videoFolder.isEmpty()->{
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize(),
+                            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
+                        ) {
+                            item {
+                                Box(
+                                    modifier = Modifier.fillParentMaxSize(),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = "No Folders found",
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        color = Color.Gray
+                                    )
+                                }
                             }
-                        )
+                        }
                     }
+                    else->{
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize(),
+                            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
+                        ) {
+                            items(videoFolder.toList()) { (folderName, videos) ->
+                                FolderCart(
+                                    folderName = folderName,
+                                    videoCount = videos.size,
+                                    onClick = {
+                                        navController.navigate(
+                                            NavigationItem.folderVideoScreen(
+                                                folderName = folderName
+                                            )
+                                        )
+                                    }
+                                )
+                            }
+                        }
+                    }
+
                 }
-            }
+
         } else {
+
             // Permission Denied: Show Overlay
             PermissionRequestOverlay(
                 // If we are here, it's denied. We assume permanent if rationale is false,

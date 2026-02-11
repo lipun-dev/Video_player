@@ -1,6 +1,5 @@
 package com.example.videoplayer.presentation.navigation
 
-import android.net.Uri
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.animation.core.tween
@@ -8,6 +7,7 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.core.net.toUri
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -20,33 +20,24 @@ import com.example.videoplayer.viewModel.MyViewModel
 
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
-fun AppNavigation(startDestination: NavigationItem, viewModel: MyViewModel,
-                  pendingVideoUri: Uri? = null,
-                  pendingVideoTitle: String? = null,
-                  onVideoHandled: () -> Unit = {}) {
+fun AppNavigation(startDestination: NavigationItem, viewModel: MyViewModel) {
 
     val navController = rememberNavController()
     val animationDuration = 400
 
-    LaunchedEffect(pendingVideoUri) {
-        if (pendingVideoUri != null) {
-            // IMPORTANT: Encode the URI for navigation
-            val encodedUri = Uri.encode(pendingVideoUri.toString())
-
-            // Navigate to video player
+    LaunchedEffect(viewModel.navigateToPlayerTrigger) {
+        if (viewModel.navigateToPlayerTrigger) {
+            // Navigate WITHOUT passing the complex URI string
             navController.navigate(
                 NavigationItem.Video_player(
-                    VideoUri = encodedUri,
-                    title = pendingVideoTitle ?: "External Video"
+                    VideoUri = null, // Passing null indicates "Check ViewModel"
+                    title = viewModel.currentExternalVideoTitle
                 )
             ) {
-                // Clear back stack so user can't go back to home
-                // This makes video player the first screen
-                popUpTo(0) {
-                    inclusive = true
-                }
+                // Optional: Clear backstack only if you want the app to close after video
+                popUpTo(0) { inclusive = true }
             }
-            onVideoHandled()
+            viewModel.onNavigationHandled()
         }
     }
 
@@ -85,10 +76,28 @@ fun AppNavigation(startDestination: NavigationItem, viewModel: MyViewModel,
         }
         composable<NavigationItem.Video_player> {backStackEntry->
 
-            val args: NavigationItem.Video_player =backStackEntry.toRoute()
+            val args = backStackEntry.toRoute<NavigationItem.Video_player>()
 
 
-            VideoPlayer(args.VideoUri,viewModel, title = args.title, navController = navController)
+            val effectiveUri = if (args.VideoUri != null) {
+                args.VideoUri.toUri()
+            } else {
+                viewModel.currentExternalVideoUri
+            }
+
+            val effectiveTitle = args.title ?: viewModel.currentExternalVideoTitle ?: "Video"
+
+            if (effectiveUri != null) {
+                VideoPlayer(
+                    uri = effectiveUri.toString(),
+                    viewModel = viewModel,
+                    title = effectiveTitle,
+                    navController = navController
+                )
+            } else {
+                // Fallback if something went wrong
+                LaunchedEffect(Unit) { navController.popBackStack() }
+            }
 
         }
         composable<NavigationItem.AllVideoFolder>(

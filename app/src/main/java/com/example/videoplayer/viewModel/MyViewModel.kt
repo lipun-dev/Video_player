@@ -4,6 +4,9 @@ import android.app.Application
 import android.content.Context
 import android.net.Uri
 import androidx.annotation.OptIn
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -56,7 +59,7 @@ class MyViewModel(val repo: Repo,val application: Application,private val prefs:
     private val _showUi = MutableStateFlow(false)
     val showUi: StateFlow<Boolean> = _showUi.asStateFlow()
 
-    private val _isLoading = MutableStateFlow(false)
+    private val _isLoading = MutableStateFlow(true)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
     private val _playerState = MutableStateFlow<ExoPlayer?>(null)
@@ -67,6 +70,24 @@ class MyViewModel(val repo: Repo,val application: Application,private val prefs:
 
     private val _subtitleTracks = MutableStateFlow<List<VideoTrackInfo>>(emptyList())
     val subtitleTracks = _subtitleTracks.asStateFlow()
+
+    var currentExternalVideoUri by mutableStateOf<Uri?>(null)
+        private set
+    var currentExternalVideoTitle by mutableStateOf<String?>(null)
+        private set
+
+    // Event to trigger navigation (using a Channel or SharedFlow is best, but State works for simple cases)
+    var navigateToPlayerTrigger by mutableStateOf(false)
+
+    fun handleExternalIntent(uri: Uri, title: String) {
+        currentExternalVideoUri = uri
+        currentExternalVideoTitle = title
+        navigateToPlayerTrigger = true
+    }
+
+    fun onNavigationHandled() {
+        navigateToPlayerTrigger = false
+    }
 
     fun createPlayerWithMediaItems(context: Context,uri: String){
         if(_playerState.value == null){
@@ -91,13 +112,23 @@ class MyViewModel(val repo: Repo,val application: Application,private val prefs:
         viewModelScope.launch {
             isPermissionGranted
                 .collect { granted ->
-                if (granted == true) {
-                    LoadAllvideos()
-                    LoadFolderVideos()
-                } else {
-                    _videoList.value = emptyList()
-                    _FolderList.value = emptyMap()
-                }
+                    when (granted) {
+                        true -> {
+                            // Permission is granted: Load Data
+                            LoadAllvideos()
+                            LoadFolderVideos()
+                        }
+                        false -> {
+                            // Permission is explicitly denied: Clear Data & Stop Loading
+                            _videoList.value = emptyList()
+                            _FolderList.value = emptyMap()
+                            _isLoading.value = false
+                        }
+                        null -> {
+                            // DataStore is still loading: Do NOTHING.
+                            // Keep _isLoading = true (from initialization).
+                        }
+                    }
             }
         }
     }
@@ -105,12 +136,13 @@ class MyViewModel(val repo: Repo,val application: Application,private val prefs:
     @OptIn(UnstableApi::class)
     fun LoadAllvideos(){
         viewModelScope.launch {
-            _isLoading.value = true
+
             repo.getAllVideos(application).collect {
                 _videoList.value = it
 
             }
             _isLoading.value = false
+
         }
 
 
