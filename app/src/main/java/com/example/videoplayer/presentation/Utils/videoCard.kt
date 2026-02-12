@@ -53,42 +53,31 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
-import coil3.ImageLoader
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
-import coil3.video.VideoFrameDecoder
 import coil3.video.videoFrameMillis
+import com.example.videoplayer.Local.LocalVideoImageLoader
+import com.example.videoplayer.data.videoModel
 import com.example.videoplayer.presentation.Utils.vControls.shareVideo
-import com.example.videoplayer.presentation.navigation.NavigationItem
 import kotlinx.coroutines.launch
 
 @RequiresApi(Build.VERSION_CODES.Q)
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun videoCard(
-    path: String,
-    title: String,
-    size: String,
-    duration: String,
-    dateAdded: String,
-    fileName: String,
-    thumbnail: String,
-    id: String,
-    navController: NavController,
+    video: videoModel,
+    onPlayClick: () -> Unit,
     onFileChanged:()-> Unit = {}
 ) {
     val context = LocalContext.current
-    val imageLoader = ImageLoader.Builder(context).components {
-        add(VideoFrameDecoder.Factory())
-    }.build()
+    val imageLoader = LocalVideoImageLoader.current
 
     var showBottomSheet = rememberSaveable { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState()
 
     var showRenameDialog = rememberSaveable { mutableStateOf(false) }
     var showDeleteDialog = rememberSaveable { mutableStateOf(false) }
-    var renameText = rememberSaveable { mutableStateOf(fileName) }
+    var renameText = rememberSaveable { mutableStateOf(video.filename) }
 
     val scope = rememberCoroutineScope()
 
@@ -135,14 +124,7 @@ fun videoCard(
             )
             .padding(horizontal = 8.dp)
             .combinedClickable(
-                onClick = {
-                    navController.navigate(
-                        NavigationItem.Video_player(
-                            VideoUri = path,
-                            title = fileName
-                        )
-                    )
-                },
+                onClick = onPlayClick,
                 onLongClick = {
                     showBottomSheet.value = true
                 }
@@ -158,7 +140,7 @@ fun videoCard(
             verticalAlignment = Alignment.CenterVertically
         ) {
             AsyncImage(
-                model = ImageRequest.Builder(LocalContext.current).data(thumbnail)
+                model = ImageRequest.Builder(LocalContext.current).data(video.thumbnailUri)
                     .videoFrameMillis(1000).build(),
                 contentDescription = "Video Thumbnail",
                 modifier = Modifier
@@ -170,7 +152,7 @@ fun videoCard(
             Spacer(modifier = Modifier.width(16.dp))
             Column {
                 Text(
-                    text = fileName.takeIf { it.isNotBlank() }?:"Untitled",
+                    text = video.filename.takeIf { it.isNotBlank() }?:"Untitled",
                     style = MaterialTheme.typography.titleMedium,
                     color = permanentTextColor,
                     maxLines = 1,
@@ -182,21 +164,21 @@ fun videoCard(
                 Spacer(modifier = Modifier.height(4.dp))
 
                 Text(
-                    text = "Duration : ${formatter(duration.toLongOrNull()?:0)}",
+                    text = "Duration : ${formatter(video.duration.toLongOrNull()?:0)}",
                     style = MaterialTheme.typography.bodyMedium,
                     color = permanentSecondaryTextColor,
                     fontFamily = irishGroverFamily
                 )
 
                 Text(
-                    text = "Size : ${formatFIleSize(size.toLongOrNull()?:0)}",
+                    text = "Size : ${formatFIleSize(video.size.toLongOrNull()?:0)}",
                     style = MaterialTheme.typography.bodyMedium,
                     color = permanentSecondaryTextColor,
                     fontFamily = irishGroverFamily
                 )
 
                 Text(
-                    text = "Added : ${formatDate(dateAdded.toLongOrNull()?:0)}",
+                    text = "Added : ${formatDate(video.dateAdded.toLongOrNull()?:0)}",
                     style = MaterialTheme.typography.bodySmall,
                     color = permanentSecondaryTextColor,
                     fontFamily = irishGroverFamily
@@ -236,7 +218,7 @@ fun videoCard(
                             if (!sheetState.isVisible) {
                                 showBottomSheet.value = false
                                 //onShareClick(path) // Trigger share callback
-                                shareVideo(context = context, videoLocation = path)
+                                shareVideo(context = context, videoLocation = video.path!!)
                             }
                         }
                     }
@@ -251,7 +233,7 @@ fun videoCard(
                             if (!sheetState.isVisible) {
                                 showBottomSheet.value = false
                                 //onRenameClick(path) // Trigger rename callback
-                                renameText.value = fileName
+                                renameText.value = video.filename
                                 showRenameDialog.value = true
                             }
                         }
@@ -303,7 +285,7 @@ fun videoCard(
                 TextButton(onClick = {
                     showRenameDialog.value = false
                     // Perform Rename
-                    val intentSender = MediaModificationHelper.renameVideo(context, id, renameText.value)
+                    val intentSender = MediaModificationHelper.renameVideo(context, video.id!!, renameText.value)
                     if (intentSender != null) {
                         // Permission needed: Launch system dialog
                         intentSenderLauncher.launch(IntentSenderRequest.Builder(intentSender).build())
@@ -328,13 +310,13 @@ fun videoCard(
             titleContentColor = permanentTextColor,
             textContentColor = permanentSecondaryTextColor,
             title = { Text("Delete Video") },
-            text = { Text("Are you sure you want to delete '$title'? This action cannot be undone.") },
+            text = { Text("Are you sure you want to delete '${video.title}'? This action cannot be undone.") },
             confirmButton = {
                 TextButton(
                     onClick = {
                         showDeleteDialog.value = false
                         // Perform Delete
-                        val intentSender = MediaModificationHelper.deleteVideo(context, id)
+                        val intentSender = MediaModificationHelper.deleteVideo(context, video.id!!)
                         if (intentSender != null) {
                             // Permission needed: Launch system dialog
                             intentSenderLauncher.launch(
@@ -366,8 +348,9 @@ fun BottomSheetItem(
     onClick:()-> Unit
 ) {
     Row(
-        modifier = Modifier.fillMaxWidth()
-            .clickable{
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable {
                 onClick()
             }
             .padding(horizontal = 24.dp, vertical = 16.dp),

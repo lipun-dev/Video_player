@@ -1,5 +1,8 @@
 package com.example.videoplayer.data
 
+import androidx.compose.runtime.Immutable
+
+@Immutable
 data class videoModel(
     val id: String?,
     val path: String?,

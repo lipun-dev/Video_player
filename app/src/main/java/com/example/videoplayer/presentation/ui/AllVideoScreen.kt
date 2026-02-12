@@ -23,6 +23,7 @@ import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import com.example.videoplayer.presentation.Utils.videoCard
+import com.example.videoplayer.presentation.navigation.NavigationItem
 import com.example.videoplayer.viewModel.MyViewModel
 
 
@@ -37,14 +38,16 @@ fun AllVideoScreen(navController: NavController,
     Column (
         modifier = Modifier.fillMaxSize()
     ){
-        LaunchedEffect(key1 = true) {
-            viewModel.LoadAllvideos()
-        }
 
         val videoList = viewModel.videoList.collectAsState()
         //9cf214fe-592e-469b-8cd6-56ff3df49a6e  9cf214fe-592e-469b-8cd6-56ff3df49a6e
         Log.d("AllVideoScreen", "Step1: Using ViewModel instance ID = ${viewModel.getInstanceId()}")
 
+        LaunchedEffect(key1 = Unit) {
+            if(videoList.value.isEmpty()){
+                viewModel.LoadAllvideos()
+            }
+        }
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(16.dp),
@@ -65,18 +68,18 @@ fun AllVideoScreen(navController: NavController,
                     }
                 }
             }else{
-                items(videoList.value) {
+                items(videoList.value) {video->
 
                     videoCard(
-                        path = it.path?:"Unknown",
-                        title = it.title?:"Untitled",
-                        size = it.size,
-                        duration = it.duration,
-                        dateAdded = it.dateAdded,
-                        fileName = it.filename,
-                        thumbnail = it.thumbnailUri.toString(),
-                        id = it.id.toString(),
-                        navController = navController,
+                        video = video,
+                        onPlayClick = {
+                            navController.navigate(
+                                NavigationItem.Video_player(
+                                    VideoUri = video.path, // Assuming path is safe or ID
+                                    title = video.title
+                                )
+                            )
+                        },
                         onFileChanged = {
                             viewModel.LoadAllvideos()
                         }

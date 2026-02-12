@@ -29,6 +29,7 @@ import androidx.navigation.NavController
 import com.example.videoplayer.R
 import com.example.videoplayer.presentation.Utils.CustomTopAppBar
 import com.example.videoplayer.presentation.Utils.videoCard
+import com.example.videoplayer.presentation.navigation.NavigationItem
 import com.example.videoplayer.viewModel.MyViewModel
 
 
@@ -84,15 +85,15 @@ fun FolderVideoScreen(navController: NavController,folderName: String,
                 ) {video->
 
                     videoCard(
-                        path = video.path?:"Unknown",
-                        title = video.title?:"Untitled",
-                        size = video.size,
-                        duration = video.duration,
-                        dateAdded = video.dateAdded,
-                        fileName = video.filename,
-                        thumbnail = video.thumbnailUri?:"Unknown",
-                        id = video.id?:"Unknown",
-                        navController = navController,
+                        video = video,
+                        onPlayClick = {
+                            navController.navigate(
+                                NavigationItem.Video_player(
+                                    VideoUri = video.path, // Assuming path is safe or ID
+                                    title = video.title
+                                )
+                            )
+                        },
                         onFileChanged = {
                             viewModel.LoadFolderVideos()
                         }

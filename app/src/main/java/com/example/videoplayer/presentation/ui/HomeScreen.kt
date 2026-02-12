@@ -56,9 +56,11 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -219,7 +221,7 @@ fun SlidingGlassBottomNavBar(
         val tabWidth = maxWidth / tabs.size
 
         // PHYSICS: Matches your Login Toggle (LowBouncy = Liquid feel)
-        val indicatorOffset by animateDpAsState(
+        val indicatorOffset = animateDpAsState(
             targetValue = tabWidth * pagerState.currentPage,
             animationSpec = spring(
                 dampingRatio = Spring.DampingRatioLowBouncy,
@@ -234,19 +236,30 @@ fun SlidingGlassBottomNavBar(
                 .width(tabWidth)
                 .fillMaxHeight()
                 .padding(6.dp) // Inset slightly so it floats inside
-                .offset(x = indicatorOffset)
+                .offset { IntOffset(
+                    x = indicatorOffset.value.roundToPx(),
+                    y = 0
+                ) }
                 .clip(RoundedCornerShape(50))
                 .then(
                     if (isAndroid12OrAbove) {
                         Modifier
                             .blur(8.dp) // Stronger blur for "Thick Glass" look
                             .background(glassSliderBrush)
-                            .border(width = 1.dp, brush = glassBorderBrush, shape = RoundedCornerShape(50))
+                            .border(
+                                width = 1.dp,
+                                brush = glassBorderBrush,
+                                shape = RoundedCornerShape(50)
+                            )
                     } else {
                         // Fallback for older phones
                         Modifier
                             .background(Color.White.copy(alpha = 0.1f))
-                            .border(width = 1.dp, color = Color.White.copy(alpha = 0.2f), shape = RoundedCornerShape(50))
+                            .border(
+                                width = 1.dp,
+                                color = Color.White.copy(alpha = 0.2f),
+                                shape = RoundedCornerShape(50)
+                            )
                     }
                 )
         )
@@ -262,14 +275,14 @@ fun SlidingGlassBottomNavBar(
                 val interactionSource = remember { MutableInteractionSource() }
 
                 // Animate scale: Selected pops out, Unselected recedes
-                val scale by animateFloatAsState(
+                val scale = animateFloatAsState(
                     targetValue = if (isSelected) 1.15f else 0.9f,
                     animationSpec = spring(dampingRatio = 0.6f), // Subtle bounce
                     label = "scale"
                 )
 
                 // Animate Color: "Silver" for active, "Dark Gray" for inactive
-                val contentColor by animateColorAsState(
+                val contentColor = animateColorAsState(
                     targetValue = if (isSelected) Color(0xFFEEEEEE) else Color(0xFF666666),
                     label = "color"
                 )
@@ -291,10 +304,10 @@ fun SlidingGlassBottomNavBar(
                     Icon(
                         imageVector = if (isSelected) tab.icon else tab.filedIcon, // Use filedIcon or unselectedIcon
                         contentDescription = tab.title,
-                        tint = contentColor,
+                        tint = contentColor.value,
                         modifier = Modifier
                             .size(28.dp)
-                            .scale(scale)
+                            .scale(scale.value)
                     )
 
                     // Label only shows when selected (Cleaner look) or barely visible when unselected
@@ -303,9 +316,12 @@ fun SlidingGlassBottomNavBar(
                         Text(
                             text = tab.title,
                             fontSize = 11.sp,
-                            color = contentColor,
+                            color = contentColor.value,
                             fontWeight = FontWeight.SemiBold,
-                            modifier = Modifier.scale(scale)
+                            modifier = Modifier.graphicsLayer {
+                                scaleX = scale.value
+                                scaleY = scale.value
+                            }
                         )
                     }
                 }

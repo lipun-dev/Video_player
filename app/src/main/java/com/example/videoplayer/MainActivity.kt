@@ -11,11 +11,16 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.annotation.OptIn
 import androidx.annotation.RequiresApi
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
+import coil3.ImageLoader
+import coil3.request.crossfade
+import coil3.video.VideoFrameDecoder
+import com.example.videoplayer.Local.LocalVideoImageLoader
 import com.example.videoplayer.dataStore.prefDataStore
 import com.example.videoplayer.domain.RepoImpal
 import com.example.videoplayer.presentation.navigation.AppNavigation
@@ -37,6 +42,8 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+
+
     @OptIn(UnstableApi::class)
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -44,13 +51,20 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         processIntent(intent)
+        val videoImageLoader = ImageLoader.Builder(this)
+            .components {
+                add(VideoFrameDecoder.Factory())
+            }
+            .crossfade(true)
+            .build()
         setContent {
             VideoPlayerTheme {
-                AppNavigation(
-                    startDestination = NavigationItem.HomeScreen,
-                    viewModel = viewModel
-                )
-
+                CompositionLocalProvider(LocalVideoImageLoader provides videoImageLoader){
+                    AppNavigation(
+                        startDestination = NavigationItem.HomeScreen,
+                        viewModel = viewModel
+                    )
+                }
             }
         }
     }
