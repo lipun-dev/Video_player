@@ -3,14 +3,22 @@
 A fully-featured **local video player** for Android, built entirely with **Jetpack Compose** and powered by **ExoPlayer**. Browse all videos stored on your device, play them with custom controls, and manage your library — all from a clean, modern UI.
 
 ---
+## 📥 Download
+
+> Get the latest APK and install it directly on your Android device.
+
+<p align="center">
+  <a href="https://github.com/lipun-dev/Video_player/releases/download/VideoPlayer/app-debug.apk">
+    <img src="https://img.shields.io/badge/Download-APK-brightgreen?style=for-the-badge&logo=android" alt="Download APK"/>
+  </a>
+</p>
 
 ## 📸 Screenshots
 
 > _Replace the placeholders below with your actual screenshots._
 
 <p align="center">
-  <img src="screenshots/home_screen.png" width="220" alt="Home Screen"/>
-  &nbsp;&nbsp;
+  [videoPlayerScreen](https://github.com/user-attachments/assets/bd547291-1a24-4dbc-bf3e-fe304119105e)
   <img src="screenshots/player_screen.png" width="220" alt="Player Screen"/>
   &nbsp;&nbsp;
   <img src="screenshots/video_controls.png" width="220" alt="Custom Controls"/>
