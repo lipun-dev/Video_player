@@ -15,37 +15,31 @@ A fully-featured **local video player** for Android, built entirely with **Jetpa
 
 ## 📸 Screenshots
 
-> _Replace the placeholders below with your actual screenshots._
 
 <p align="center">
-  [videoPlayerScreen](https://github.com/user-attachments/assets/bd547291-1a24-4dbc-bf3e-fe304119105e)
-  <img src="screenshots/player_screen.png" width="220" alt="Player Screen"/>
+  <img src="HomeScreen.jpeg" width="220" alt="Home Screen"/>
   &nbsp;&nbsp;
-  <img src="screenshots/video_controls.png" width="220" alt="Custom Controls"/>
+  <img src="videoPlayerScreen.jpeg" width="220" alt="Player Screen"/>
+  &nbsp;&nbsp;
+  <img src="AllVideoScreen.jpeg" width="220" alt="AllVideoScreen"/>
 </p>
 
 <p align="center">
-  <img src="screenshots/rename_dialog.png" width="220" alt="Rename Dialog"/>
+  <img src="FolderVideoScreen.jpeg" width="220" alt="FolderVideoScreen"/>
   &nbsp;&nbsp;
-  <img src="screenshots/delete_dialog.png" width="220" alt="Delete Confirmation"/>
+  <img src="ScreenWithBottomBar.jpeg" width="220" alt="ScreenWithBottomBar"/>
   &nbsp;&nbsp;
-  <img src="screenshots/share_option.png" width="220" alt="Share Option"/>
 </p>
 
 ---
 
 ## 🎥 Demo
 
-> _Add your demo video or GIF below._
+<div align="center">
 
-<p align="center">
-  <a href="https://your-demo-video-link-here.com">
-    <img src="screenshots/demo_thumbnail.png" width="480" alt="Watch Demo"/>
-  </a>
-</p>
+  https://github.com/user-attachments/assets/b2577a99-ae47-44d3-b17c-bab7e5a90c63
+</div>
 
-<!-- OR embed a GIF directly -->
-<!-- <img src="screenshots/demo.gif" width="480" alt="App Demo"/> -->
 
 ---
 
@@ -213,9 +207,9 @@ copies or substantial portions of the Software.
 
 ## 👨‍💻 Author
 
-**Your Name**
-- GitHub: [@your-username](https://github.com/your-username)
-- LinkedIn: [your-linkedin](https://linkedin.com/in/your-linkedin)
+**S LIPUN DAS**
+- GitHub: [@lipun-dev](https://github.com/lipun-dev)
+- Gmail: [slipundas8888@gmail.com](slipundas8888@gmail.com)
 
 ---
 
